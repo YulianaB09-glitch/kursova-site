@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ToolRent Маркет</title>
+
+<style>
+body {margin:0;font-family:Arial;background:#f2f4f7;}
+
+header {
+    background:#2ecc71;
+    color:white;
+    padding:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+header input {padding:8px;width:200px;}
+
+/* NAV */
+nav {
+    background:#27ae60;
+    padding:10px;
+    text-align:center;
+}
+
+nav button {
+    margin:5px;
+    padding:8px 12px;
+    border:none;
+    background:white;
+    cursor:pointer;
+    border-radius:5px;
+}
+
+/* LAYOUT */
+.container {display:flex;}
+
+.sidebar {
+    width:220px;
+    background:white;
+    padding:15px;
+}
+
+.sidebar button {
+    width:100%;
+    margin:5px 0;
+    padding:8px;
+    border:none;
+    background:#eee;
+    cursor:pointer;
+}
+
+/* PRODUCTS */
+.products {
+    flex:1;
+    padding:20px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:20px;
+}
+
+.card {
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    box-shadow:0 0 8px rgba(0,0,0,0.1);
+    cursor:pointer;
+}
+
+.price {color:#27ae60;font-weight:bold;}
+
+.btn {
+    background:#27ae60;
+    color:white;
+    padding:8px;
+    margin-top:10px;
+    text-align:center;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+/* PAGES */
+.page {display:none;}
+.active {display:block;}
+
+/* CART */
+.cart {
+    position:fixed;
+    right:10px;
+    bottom:10px;
+    background:white;
+    padding:15px;
+    border-radius:10px;
+}
+
+/* SECTIONS */
+.section {
+    max-width:800px;
+    margin:auto;
+    padding:20px;
+    background:white;
+    border-radius:10px;
+}
+</style>
+
+<script>
+let cart=[];
+
+let products=[
+{n:"Дриль",c:"Інструменти",p:150,d:"Для свердління"},
+{n:"Болгарка",c:"Інструменти",p:200,d:"Різка металу"},
+{n:"Перфоратор",c:"Інструменти",p:250,d:"Бетон"},
+{n:"Шуруповерт",c:"Інструменти",p:120,d:"Монтаж"},
+{n:"Лобзик",c:"Інструменти",p:180,d:"Різка дерева"},
+{n:"Фрезер",c:"Інструменти",p:210,d:"Обробка"},
+{n:"Пила дискова",c:"Інструменти",p:230,d:"Різка"},
+{n:"Компресор",c:"Будівництво",p:350,d:"Повітря"},
+{n:"Бетономішалка",c:"Будівництво",p:500,d:"Суміші"},
+{n:"Вібратор",c:"Будівництво",p:320,d:"Бетон"},
+{n:"Генератор",c:"Будівництво",p:600,d:"Енергія"},
+{n:"Плиткоріз",c:"Будівництво",p:260,d:"Плитка"},
+{n:"Рівень лазерний",c:"Будівництво",p:220,d:"Точність"},
+{n:"Фарбопульт",c:"Будівництво",p:210,d:"Фарбування"},
+{n:"Сходи",c:"Інше",p:100,d:"Побут"},
+{n:"Риштування",c:"Інше",p:450,d:"Висота"},
+{n:"Пилосос будівельний",c:"Будівництво",p:270,d:"Прибирання"},
+{n:"Культиватор",c:"Інше",p:300,d:"Земля"},
+{n:"Мийка високого тиску",c:"Інше",p:280,d:"Очищення"},
+{n:"Зварювальний апарат",c:"Інструменти",p:400,d:"Зварка"},
+{n:"Газонокосарка",c:"Інше",p:260,d:"Газон"},
+{n:"Відбійний молоток",c:"Інструменти",p:420,d:"Демонтаж"},
+{n:"Міксер будівельний",c:"Будівництво",p:190,d:"Суміші"},
+{n:"Пістолет герметика",c:"Інше",p:90,d:"Герметик"},
+{n:"Тачка",c:"Інше",p:110,d:"Перевезення"},
+{n:"Драбина телескопічна",c:"Інше",p:170,d:"Висота"},
+{n:"Осушувач",c:"Будівництво",p:300,d:"Сушка"},
+{n:"Теплова гармата",c:"Будівництво",p:340,d:"Обігрів"},
+{n:"Паяльник",c:"Інструменти",p:80,d:"Пайка"},
+{n:"Реноватор",c:"Інструменти",p:200,d:"Універсальний"}
+];
+
+function showPage(id){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+function render(list){
+    let html="";
+    list.forEach((p,i)=>{
+        html+=`
+        <div class="card" onclick="openProduct(${i})">
+        <h3>${p.n}</h3>
+        <p>${p.c}</p>
+        <div class="price">${p.p} грн</div>
+        </div>`;
+    });
+    document.getElementById("products").innerHTML=html;
+}
+
+function filter(cat){
+    if(cat=="all") render(products);
+    else render(products.filter(p=>p.c==cat));
+}
+
+function search(){
+    let v=document.getElementById("search").value.toLowerCase();
+    render(products.filter(p=>p.n.toLowerCase().includes(v)));
+}
+
+function openProduct(i){
+    let p=products[i];
+    showPage("product");
+    document.getElementById("prodName").innerText=p.n;
+    document.getElementById("prodDesc").innerText=p.d;
+    document.getElementById("prodPrice").innerText=p.p+" грн/день";
+    document.getElementById("buyBtn").onclick=()=>add(p.p);
+}
+
+function add(price){
+    cart.push(price);
+    let sum=cart.reduce((a,b)=>a+b,0);
+    document.getElementById("cart").innerHTML =
+    "Товарів: "+cart.length+"<br>Сума: "+sum+" грн";
+}
+
+window.onload=()=>render(products);
+</script>
+
+</head>
+<body>
+
+<header>
+<h2>ToolRent</h2>
+<input id="search" placeholder="Пошук..." oninput="search()">
+</header>
+
+<nav>
+<button onclick="showPage('catalog')">Каталог</button>
+<button onclick="showPage('reviews')">Відгуки</button>
+<button onclick="showPage('contacts')">Контакти</button>
+</nav>
+
+<!-- КАТАЛОГ -->
+<div id="catalog" class="page active container">
+
+<div class="sidebar">
+<h3>Категорії</h3>
+<button onclick="filter('all')">Всі</button>
+<button onclick="filter('Інструменти')">Інструменти</button>
+<button onclick="filter('Будівництво')">Будівництво</button>
+<button onclick="filter('Інше')">Інше</button>
+</div>
+
+<div id="products" class="products"></div>
+
+</div>
+
+<!-- СТОРІНКА ТОВАРУ -->
+<div id="product" class="page">
+<div class="section">
+<button onclick="showPage('catalog')">← Назад</button>
+<h2 id="prodName"></h2>
+<p id="prodDesc"></p>
+<h3 id="prodPrice"></h3>
+<div class="btn" id="buyBtn">В кошик</div>
+</div>
+</div><!-- ВІДГУКИ -->
+<div id="reviews" class="page">
+    <div class="section">
+        <h2>💬 Відгуки клієнтів</h2>
+        
+        <div style="border:1px solid #ddd; background:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:15px;">
+            <p>👤 <b>Олександр Коваль</b> ⭐⭐⭐⭐⭐</p>
+            <p>
+                “Брав перфоратор і болгарку — інструменти в ідеальному стані.
+                Все працює як нове, видача швидка, без зайвих питань.
+                Дуже зручно, що можна орендувати на 1 день без переплат.”
+            </p>
+        </div>
+        
+        <div style="border:1px solid #ddd; background:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:15px;">
+            <p>👤 <b>Ірина Мельник</b> ⭐⭐⭐⭐</p>
+            <p>
+                “Замовляла шуруповерт і лазерний рівень для ремонту.
+                Ціни нормальні, сервіс адекватний.
+                Хотілося б більше пунктів видачі, але загалом все супер.”
+            </p>
+        </div>
+        
+        <div style="border:1px solid #ddd; background:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:15px;">
+            <p>👤 <b>Дмитро Шевченко</b> ⭐⭐⭐⭐⭐</p>
+            <p>
+                “Орендував генератор і бетономішалку для будівництва.
+                Все працювало без збоїв. Дуже виручили — економія величезна.”
+            </p>
+        </div>
+        
+        <div style="border:1px solid #ddd; background:#f9f9f9; padding:15px; border-radius:10px;">
+            <p>👤 <b>Наталія Романюк</b> ⭐⭐⭐⭐⭐</p>
+            <p>
+                “Дуже зручний сервіс! Брала мийку високого тиску.
+                Все швидко, зрозуміло і без проблем. Рекомендую!”
+            </p>
+        </div>
+        
+    </div>
+</div>      
+    </div></div><!-- КОНТАКТИ -->
+
+<div id="contacts" class="page">
+    <div class="section">
+        
+        <h2>📞 Контактна інформація</h2>
+        
+        <p>🏢 <b>ToolRent Маркет</b></p>
+        <p>📍 Адреса: м. Кривий Ріг</p>
+        <p>📞 Телефон: +380 99 123 45 67</p>
+        <p>📧 Email: toolrent@gmail.com</p>
+        <p>🕒 Графік роботи: Пн–Нд 08:00–20:00</p>
+        
+        <hr>
+        
+        <h3>💬 Підтримка</h3>
+        <p>Якщо у вас є питання щодо оренди або товарів — напишіть нам на пошту або зателефонуйте.</p>
+        
+    </div>
+</div><!-- КОШИК -->
+<div class="cart">
+    <b>🛒 Кошик</b>
+    <div id="cart">Пусто</div>
+</div>
